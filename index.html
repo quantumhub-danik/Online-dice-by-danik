@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Dice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #1a1008;
+    --panel: #2a1c0e;
+    --panel2: #3a2a14;
+    --gold: #f5c842;
+    --gold2: #e0a800;
+    --text: #f5e8c0;
+    --muted: #a08860;
+    --blue: #2563eb;
+    --yellow: #f5c842;
+    --red: #e03030;
+    --green: #22c55e;
+    --purple: #9333ea;
+    --orange: #f97316;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #4c1d95 100%);
+    border-bottom: 2px solid #a855f7;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: 'Oswald', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 12px #a855f780;
+  }
+
+  .logo .vip {
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--gold);
+    color: #1a0a00;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 1px;
+  }
+
+  /* Layout: center panel + right sidebar */
+  .page {
+    display: flex;
+    width: 100%;
+    max-width: 820px;
+    gap: 14px;
+    padding: 20px 14px 40px;
+    align-items: flex-start;
+  }
+
+  .center-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  /* Right sidebar — info only */
+  .sidebar {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 16px;
+  }
+
+  .sidebar-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-align: center;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #3a2a14;
+  }
+
+  .info-btn {
+    width: 100%;
+    padding: 10px 10px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #fff;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.92;
+  }
+  .info-btn .icon { font-size: 15px; flex-shrink: 0; }
+
+  .btn-add    { background: var(--blue); }
+  .btn-deal   { background: var(--yellow); color: #1a0a00; }
+  .btn-ltrade { background: var(--red); }
+  .btn-fair   { background: var(--green); color: #0a2a00; }
+  .btn-last   { background: var(--purple); }
+  .btn-no     { background: var(--orange); }
+
+  .info-desc {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 0 4px;
+    line-height: 1.4;
+  }
+
+  /* Panels */
+  .panel {
+    width: 100%;
+    background: var(--panel);
+    border: 1.5px solid var(--gold2);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .panel-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .room-label {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+
+  .dice-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    justify-content: center;
+  }
+
+  .select-box {
+    background: var(--panel2);
+    border: 1px solid var(--gold2);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .dice-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 14px;
+    min-height: 68px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .die {
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    border: 3px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .die.rolling { animation: spindie 0.5s ease; }
+  @keyframes spindie {
+    0%   { transform: rotateY(0deg) scale(1); }
+    40%  { transform: rotateY(180deg) scale(1.12); }
+    100% { transform: rotateY(360deg) scale(1); }
+  }
+
+  .die-blue   { background: #2563eb; }
+  .die-yellow { background: #f5c842; color: #333 !important; }
+  .die-red    { background: #e03030; }
+  .die-green  { background: #22c55e; color: #0a2a00 !important; }
+  .die-purple { background: #9333ea; }
+  .die-orange { background: #f97316; }
+
+  .seed-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    justify-content: center;
+  }
+  .seed-row code {
+    background: var(--panel2);
+    padding: 3px 10px;
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+    letter-spacing: 1px;
+    border: 1px solid #5a4020;
+  }
+
+  .verify-link {
+    display: block;
+    text-align: center;
+    color: var(--gold);
+    font-size: 12px;
+    text-decoration: none;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .verify-link:hover { text-decoration: underline; }
+
+  .roll-btn {
+    width: 100%;
+    background: linear-gradient(180deg, var(--gold) 0%, var(--gold2) 100%);
+    color: #1a0a00;
+    font-family: 'Oswald', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: transform 0.12s, filter 0.12s;
+  }
+  .roll-btn:active { transform: scale(0.97); filter: brightness(0.92); }
+
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .score-row strong { color: var(--text); }
+
+  .result-bar {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+    display: none;
+    background: var(--panel2);
+    border: 1px solid var(--gold2);
+    color: var(--gold);
+  }
+
+  /* History */
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    padding: 5px 10px;
+    background: var(--panel2);
+    border-radius: 6px;
+  }
+  .history-dots { display: flex; gap: 4px; }
+  .hdot {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* Color Lock panel */
+  .lock-panel {
+    width: 100%;
+    background: #0f0a1a;
+    border: 1.5px solid var(--purple);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .lock-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #c084fc;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lock-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .color-choice {
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .color-choice .swatch { width: 26px; height: 26px; border-radius: 6px; }
+  .color-choice .c-label { font-size: 10px; color: var(--muted); }
+  .color-choice.selected { border-color: #fff; transform: scale(1.05); }
+  .c-blue-ch   { background: rgba(37,99,235,0.2); }
+  .c-yellow-ch { background: rgba(245,200,66,0.2); }
+  .c-red-ch    { background: rgba(224,48,48,0.2); }
+  .c-green-ch  { background: rgba(34,197,94,0.2); }
+  .c-purple-ch { background: rgba(147,51,234,0.2); }
+  .c-orange-ch { background: rgba(249,115,22,0.2); }
+
+  .lock-activate {
+    width: 100%;
+    padding: 10px;
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: filter 0.12s;
+  }
+  .lock-activate:active { filter: brightness(0.85); }
+  .lock-activate.on { background: #6b21a8; }
+
+  .lock-status {
+    margin-top: 10px;
+    font-size: 11px;
+    text-align: center;
+    min-height: 16px;
+    color: #c084fc;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ONLINE DICE <span class="vip">VIP</span></div>
+</header>
+
+<div class="page">
+
+  <!-- CENTER -->
+  <div class="center-col">
+
+    <div class="room-label">
+      <div class="dot"></div>
+      VIP Room — открыта
+    </div>
+
+    <!-- Dice panel -->
+    <div class="panel">
+      <div class="panel-title">ROLL COLOR DICE</div>
+
+      <div class="dice-controls">
+        <select class="select-box" id="diceCountSel">
+          <option value="1">1 DIE</option>
+          <option value="2">2 DICE</option>
+          <option value="3">3 DICE</option>
+          <option value="4" selected>4 DICE</option>
+          <option value="5">5 DICE</option>
+          <option value="6">6 DICE</option>
+        </select>
+        <select class="select-box">
+          <option>COLOR MODE</option>
+          <option>HEAVEN</option>
+        </select>
+      </div>
+
+      <div class="dice-row" id="diceRow"></div>
+
+      <div class="seed-row">🔒 <code id="seedCode">mfdDsL8GPM</code></div>
+      <a class="verify-link" onclick="alert('Все броски верифицированы и честны!')">🛡 Verify History</a>
+
+      <button class="roll-btn" onclick="doRoll()">GO AGAIN !</button>
+
+      <div class="score-row">
+        <span>Wins: <strong id="wins">0</strong></span>
+        <span>Total: <strong id="total">0</strong></span>
+        <span>Losses: <strong id="losses">0</strong></span>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-bar" id="resultBar"></div>
+
+    <!-- History -->
+    <div class="panel">
+      <div class="panel-title">ROLL HISTORY</div>
+      <div class="history-list" id="historyList">
+        <div style="text-align:center;font-size:12px;color:#6b5030;">No rolls yet</div>
+      </div>
+    </div>
+
+    <!-- Color Lock (was Bypass) -->
+    <div class="lock-panel">
+      <div class="lock-title">🔒 COLOR LOCK</div>
+      <div class="lock-sub">Choose a color that must never land. It will be blocked from all rolls while active.</div>
+
+      <div class="color-grid">
+        <div class="color-choice c-blue-ch" data-color="blue" onclick="selectLock(this)">
+          <div class="swatch" style="background:#2563eb;"></div>
+          <div class="c-label">BLUE</div>
+        </div>
+        <div class="color-choice c-yellow-ch" data-color="yellow" onclick="selectLock(this)">
+          <div class="swatch" style="background:#f5c842;"></div>
+          <div class="c-label">YELLOW</div>
+        </div>
+        <div class="color-choice c-red-ch" data-color="red" onclick="selectLock(this)">
+          <div class="swatch" style="background:#e03030;"></div>
+          <div class="c-label">RED</div>
+        </div>
+        <div class="color-choice c-green-ch" data-color="green" onclick="selectLock(this)">
+          <div class="swatch" style="background:#22c55e;"></div>
+          <div class="c-label">GREEN</div>
+        </div>
+        <div class="color-choice c-purple-ch" data-color="purple" onclick="selectLock(this)">
+          <div class="swatch" style="background:#9333ea;"></div>
+          <div class="c-label">PURPLE</div>
+        </div>
+        <div class="color-choice c-orange-ch" data-color="orange" onclick="selectLock(this)">
+          <div class="swatch" style="background:#f97316;"></div>
+          <div class="c-label">ORANGE</div>
+        </div>
+      </div>
+
+      <button class="lock-activate" id="lockBtn" onclick="toggleLock()">⚡ ACTIVATE COLOR LOCK</button>
+      <div class="lock-status" id="lockStatus"></div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR — info only, no interaction -->
+  <div class="sidebar">
+    <div class="sidebar-title">TRADE OPTIONS</div>
+
+    <div class="info-btn btn-add"><span class="icon">➕</span> Add More</div>
+    <div class="info-desc">Add items to the trade offer</div>
+
+    <div class="info-btn btn-deal"><span class="icon">🤝</span> Deal?</div>
+    <div class="info-desc">Accept and confirm the trade</div>
+
+    <div class="info-btn btn-ltrade"><span class="icon">❌</span> L Trade</div>
+    <div class="info-desc">Unfair trade — bad deal for you</div>
+
+    <div class="info-btn btn-fair"><span class="icon">✅</span> Fair Trade</div>
+    <div class="info-desc">Both sides get equal value</div>
+
+    <div class="info-btn btn-last"><span class="icon">📋</span> Last Offer</div>
+    <div class="info-desc">Your final offer — take it or leave it</div>
+
+    <div class="info-btn btn-no"><span class="icon">😤</span> No Thanks</div>
+    <div class="info-desc">Decline the trade entirely</div>
+  </div>
+
+</div>
+
+<script>
+const COLORS = ['blue','yellow','red','green','purple','orange'];
+const COLOR_HEX = { blue:'#2563eb', yellow:'#f5c842', red:'#e03030', green:'#22c55e', purple:'#9333ea', orange:'#f97316' };
+const FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+let wins = 0, losses = 0, total = 0;
+let lockedColor = null, lockActive = false;
+let history = [];
+
+function genSeed() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({length:10}, ()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+function buildDice(n) {
+  const row = document.getElementById('diceRow');
+  row.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'die die-blue';
+    d.textContent = FACES[0];
+    row.appendChild(d);
+  }
+}
+buildDice(4);
+document.getElementById('diceCountSel').addEventListener('change', function() {
+  buildDice(parseInt(this.value));
+});
+
+function doRoll() {
+  const n = parseInt(document.getElementById('diceCountSel').value);
+  const available = lockActive && lockedColor ? COLORS.filter(c => c !== lockedColor) : COLORS;
+  const results = Array.from({length:n}, () => available[Math.floor(Math.random()*available.length)]);
+  document.getElementById('seedCode').textContent = genSeed();
+  const dice = document.querySelectorAll('.die');
+  let done = 0;
+  dice.forEach((d, i) => {
+    d.classList.add('rolling');
+    let t = 0;
+    const iv = setInterval(() => {
+      const rc = COLORS[Math.floor(Math.random()*COLORS.length)];
+      d.className = 'die die-' + rc;
+      d.textContent = FACES[Math.floor(Math.random()*6)];
+      t++;
+      if (t >= 10) {
+        clearInterval(iv);
+        d.className = 'die die-' + results[i];
+        d.textContent = FACES[Math.floor(Math.random()*6)];
+        d.classList.remove('rolling');
+        done++;
+        if (done === n) afterRoll(results);
+      }
+    }, 60);
+  });
+}
+
+function afterRoll(results) {
+  total++;
+  const counts = {};
+  results.forEach(c => counts[c] = (counts[c]||0)+1);
+  const dominated = Object.values(counts).some(v => v >= Math.ceil(results.length/2)+1);
+  const allDiff = Object.keys(counts).length === results.length;
+  let verdict = '';
+  if (dominated)     { wins++;   verdict = '🏆 WIN — color dominated!'; }
+  else if (allDiff)  { losses++; verdict = '💀 L — all different colors'; }
+  else               {           verdict = '🎲 Neutral roll'; }
+  document.getElementById('wins').textContent = wins;
+  document.getElementById('losses').textContent = losses;
+  document.getElementById('total').textContent = total;
+  const bar = document.getElementById('resultBar');
+  bar.textContent = verdict;
+  bar.style.display = 'block';
+  history.unshift(results);
+  if (history.length > 8) history.pop();
+  renderHistory();
+  if (lockActive && lockedColor) {
+    document.getElementById('lockStatus').textContent = '✅ Color Lock ON — ' + lockedColor.toUpperCase() + ' blocked';
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  history.forEach(roll => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const dots = document.createElement('div');
+    dots.className = 'history-dots';
+    roll.forEach(c => {
+      const dot = document.createElement('div');
+      dot.className = 'hdot';
+      dot.style.background = COLOR_HEX[c];
+      dots.appendChild(dot);
+    });
+    const lbl = document.createElement('span');
+    const u = [...new Set(roll)].map(c=>c[0].toUpperCase()+c.slice(1)).join(', ');
+    lbl.textContent = u;
+    lbl.style.cssText = 'color:#a08860;font-size:10px;';
+    item.appendChild(dots);
+    item.appendChild(lbl);
+    list.appendChild(item);
+  });
+}
+
+function selectLock(el) {
+  document.querySelectorAll('.color-choice').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  lockedColor = el.dataset.color;
+  const st = document.getElementById('lockStatus');
+  st.textContent = lockActive
+    ? '✅ Color Lock ON — ' + lockedColor.toUpperCase() + ' blocked'
+    : 'Selected: ' + lockedColor.toUpperCase() + ' — press Activate to lock';
+}
+
+function toggleLock() {
+  if (!lockedColor) { alert('Select a color to lock first!'); return; }
+  lockActive = !lockActive;
+  const btn = document.getElementById('lockBtn');
+  const st = document.getElementById('lockStatus');
+  if (lockActive) {
+    btn.textContent = '🔴 DEACTIVATE COLOR LOCK';
+    btn.classList.add('on');
+    st.textContent = '✅ Color Lock ON — ' + lockedColor.toUpperCase() + ' blocked';
+  } else {
+    btn.textContent = '⚡ ACTIVATE COLOR LOCK';
+    btn.classList.remove('on');
+    st.textContent = 'Color Lock OFF';
+  }
+}
+</script>
+</body>
+</html>
